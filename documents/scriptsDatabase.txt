@@ -1,0 +1,210 @@
+Scripts hive
+
+create database analysethattest;
+
+use analysethattest;
+
+drop table if exists teams;
+
+create table teams(name string, team_name_short string, team_id string, team_id_pfr string, team_conference_pre2002 string, team_division_pre2002 string) 
+	partitioned by (team_conference string,team_division string) 
+	row format delimited fields terminated by ',' 
+	stored as textfile;
+
+describe teams;
+
+drop table if exists nfl_teams;
+
+create table nfl_teams(team_name string, team_name_short string, team_id string, team_id_pfr string, team_conference string, team_division string, team_conference_pre2002 string, team_division_pre2002 string)  row format delimited fields terminated by ',' stored as textfile;
+
+alter table nfl_teams set tblproperties("skip.header.line.count"="1");
+
+describe nfl_teams;
+
+load data inpath '/analysethat/tables/nfl_teams.csv' overwrite into table nfl_teams;
+
+Set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+//correcting some data from the original dataset
+
+insert overwrite table teams 
+	partition(team_conference,team_division) 
+	select team_name, team_name_short, team_id, team_conference_pre2002, team_division_pre2002 , team_id_pfr, case when team_name = 'New York Jets' then 'AFC' else team_conference end as team_conference, case when team_name = "Las Vegas Raiders" then "AFC West" when team_name = "St. Louis Rams" then 'NFC West' when (team_division = '' and team_name != "Las Vegas Raiders" and team_name != "St. Louis Rams") then 'Old' else team_division end as team_division  
+	from nfl_teams sort by team_conference, team_division, team_name;
+
+HDFS
+
+hdfs dfs -cat /user/hive/warehouse/analysethat.db/teams/team_conference=AFC/'team_division=AFC East'/000000_0
+
+hdfs dfs -ls /user/hive/warehouse/analysethat.db/teams/team_conference=AFC/'team_division=AFC East'
+
+
+Spread_scores
+
+Create table spread_scores (schedule_date string, schedule_season  string, schedule_week  string, schedule_playoff  string, team_home  string, score_home  string,
+			score_away  string, team_away  string, team_favorite_id  string, spread_favorite string, over_under_line  string, stadium  string,
+			stadium_neutral  string, weather_temperature  string, weather_wind_mph  string, weather_humidity  string, weather_detail  string)
+Row format delimited fields terminated by ',' stored as textfile;
+
+alter table spread_scores set tblproperties("skip.header.line.count"="1");
+
+show tblproperties spread_scores;
+
+Load data inpath '/analysethat/tables/spreadspoke_scores.csv' overwrite into table spread_scores;
+
+seasons_data
+
+Drop table if exists seasons_data;
+
+Create table seasons_data (schedule_date string, schedule_season  string, schedule_week  string,  schedule_playoff  string, team_home string, score_home  int,
+			score_away  int, team_away  string, team_favorite_id  string, spread_favorite decimal(4,1), over_under_line  decimal(4,1), weather_temperature decimal(4,1))
+Row format delimited fields terminated by ',' stored as textfile;
+
+Insert overwrite table seasons_data
+Select schedule_date, schedule_season, schedule_week, schedule_playoff, team_home, cast(score_home as int), 
+	cast(score_away as int), team_away, team_favorite_id, cast(spread_favorite as decimal), cast(over_under_line as decimal), cast(weather_temperature as decimal) 
+from spread_scores;
+
+select * from seasons_data tablesample(0.1 percent) s;
+
+Season analisys for home/away
+
+//////Regular season///////////
+
+Drop table if exists regular_season_home_away;
+
+Describe regular_season_home_away; 
+
+select * from regular_season_home_away;
+
+Create table regular_season_home_away(home_team_id string, score_home int, score_away int, away_team_id string, schedule_week int) 
+	partitioned by (schedule_season int)
+	clustered by (schedule_week) sorted by (schedule_week) into 2 buckets 
+	row format delimited fields terminated by ',' 
+	stored as textfile;
+
+Alter table regular_season_home_away clustered by (schedule_week) sorted by (schedule_week) into 2 buckets;
+
+
+
+Insert overwrite table regular_season_home_away 
+	partition(schedule_season)
+	Select th.team_id, sd.score_home ,sd.score_away, ta.team_id, cast(sd.schedule_week as int), cast(sd.schedule_season as int)
+	from seasons_data sd, teams th, teams ta
+	where sd.schedule_playoff = 'FALSE'
+	and th.name = sd.team_home
+	and ta.name = sd.team_away;
+
+Hdfs
+
+hdfs dfs -ls /user/hive/warehouse/analysethat.db/regular_season_home_away/schedule_season=2021
+hdfs dfs -cat /user/hive/warehouse/analysethat.db/regular_season_home_away/schedule_season=2021/000001_0
+
+//////end regular season////////
+
+///////Playoff (minus SuperBowl///////////
+
+Drop table if exists playoff_season_home_away;
+
+Describe playoff_season_home_away; 
+
+select * from playoff_season_home_away;
+
+
+
+///actual create
+Create table playoff_season_home_away(home_team_id string, score_home int, score_away int, away_team_id string, schedule_week string) 
+	partitioned by (schedule_season int) 
+	row format delimited fields terminated by ',' 
+	stored as textfile;
+
+
+/////actual insert
+Insert overwrite table playoff_season_home_away 
+	partition(schedule_season)
+	Select th.team_id, sd.score_home ,sd.score_away, ta.team_id, sd.schedule_week, cast(sd.schedule_season as int)
+	from seasons_data sd, teams th, teams ta
+	where sd.schedule_playoff = 'TRUE'
+	and sd.schedule_week not in ('Superbowl','15')
+	and th.name = sd.team_home
+	and ta.name = sd.team_away;
+
+
+
+Hdfs
+
+hdfs dfs -ls /user/hive/warehouse/analysethat.db/playoff_season_home_away/schedule_season=2021
+hdfs dfs -cat /user/hive/warehouse/analysethat.db/playoff_season_home_away/schedule_season=2021/000000_0
+
+//////end playoff////////
+
+/////Statistics home and away
+
+//regular season
+
+//total for the period
+Select count(*)
+From regular_season_home_away
+Where schedule_season between 1966 and 2021;
+
+//home winnings
+Select count(*)
+From regular_season_home_away
+Where schedule_season between 1966 and 2021
+ And  score_home > score_away;
+
+//away winnings
+Select count(*)
+From regular_season_home_away
+Where schedule_season between 1966 and 2021
+ And  score_home < score_away;
+
+//draws
+Select count(*)
+From regular_season_home_away
+Where schedule_season between 1966 and 2021
+ And  score_home = score_away;
+////end regular season
+
+//// playoff/////
+
+//total for the period
+Select count(*)
+From playoff_season_home_away
+Where schedule_season between 1966 and 2021;
+
+//home winnings
+Select count(*)
+From playoff_season_home_away
+Where schedule_season between 1966 and 2021
+ And  score_home > score_away;
+
+//away winnings
+Select count(*)
+From playoff_season_home_away
+Where schedule_season between 1966 and 2021
+ And  score_home < score_away;
+
+//draws
+Select count(*)
+From playoff_season_home_away
+Where schedule_season between 1966 and 2021
+ And  score_home = score_away;
+
+/////temperature////////////
+
+
+
+
+///scripts database mysql///////
+
+use analysethat;
+create table user(user varchar(50), password varchar(500), primary key (user));
+alter table user modify column password varchar(1000);
+alter table user add column admin boolean;
+insert into user(user, password)
+// hash for password "123456"
+values("jaceguai","1411501582391102022111941545898146128230134207012639390134175243202180201214658220108146");
+select * from user;
+update user set admin = 1 where user = "jaceguai";  
