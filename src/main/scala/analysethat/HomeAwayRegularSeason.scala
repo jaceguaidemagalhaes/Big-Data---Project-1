@@ -188,7 +188,9 @@ class HomeAwayRegularSeason(){
   def total(initYear: Int, finalYear: Int): Float={
     val totalPeriod = spark.sql("Select count(*) " +
       "from "+table+
-      " where schedule_season between "+ initYear.toString + " and " + finalYear.toString ).toDF("Total").first()
+      " where schedule_season between "+ initYear.toString + " and " + finalYear.toString +
+      " and score_home >= 0 and score_away >= 0"
+    ).toDF("Total").first()
     val a = totalPeriod(0).toString.toFloat
     return a
   }
@@ -198,7 +200,8 @@ class HomeAwayRegularSeason(){
     val homeWiningsPeriod = spark.sql("Select count(*) " +
       "from "+table +
       " where schedule_season between "+ initYear.toString + " and " + finalYear.toString +
-      " and  score_home > score_away"
+      " and  score_home > score_away " +
+      "and score_home >= 0 and score_away >= 0"
     ).toDF("HomeWinnings").first()
     val b = homeWiningsPeriod(0).toString.toFloat
     return b
@@ -209,7 +212,8 @@ class HomeAwayRegularSeason(){
     val homeWiningsPeriod = spark.sql("Select count(*) " +
       "from "+table +
       " where schedule_season between "+ initYear.toString + " and " + finalYear.toString +
-      " and  score_home < score_away"
+      " and  score_home < score_away" +
+      " and score_home >= 0 and score_away >= 0"
     ).toDF("HomeWinnings").first()
     val b = homeWiningsPeriod(0).toString.toFloat
     return b
@@ -220,7 +224,8 @@ class HomeAwayRegularSeason(){
     val homeWiningsPeriod = spark.sql("Select count(*) " +
       "from "+ table +
       " where schedule_season between "+ initYear.toString + " and " + finalYear.toString +
-      " and  score_home = score_away"
+      " and  score_home = score_away" +
+      " and score_home >= 0 and score_away >= 0"
     ).toDF("HomeWinnings").first()
     val b = homeWiningsPeriod(0).toString.toFloat
     return b
@@ -230,7 +235,8 @@ class HomeAwayRegularSeason(){
     val totalPeriod = spark.sql("Select count(*) " +
       "from "+ table +
       " where schedule_season between "+ initYear.toString + " and " + finalYear.toString +
-    " and home_team_id = \"" + team + "\""
+    " and home_team_id = \"" + team + "\"" +
+      " and score_home >= 0 and score_away >= 0"
     ).toDF("Total").first()
     val a = totalPeriod(0).toString.toFloat
     return a
@@ -240,7 +246,8 @@ class HomeAwayRegularSeason(){
     val totalPeriod = spark.sql("Select count(*) " +
       "from " + table +
       " where schedule_season between "+ initYear.toString + " and " + finalYear.toString +
-      " and away_team_id = \"" + team + "\""
+      " and away_team_id = \"" + team + "\"" +
+      " and score_home >= 0 and score_away >= 0"
     ).toDF("Total").first()
     val a = totalPeriod(0).toString.toFloat
     return a
@@ -253,7 +260,8 @@ class HomeAwayRegularSeason(){
       "from "+ table +
       " where schedule_season between "+ initYear.toString + " and " + finalYear.toString +
       " and  score_home > score_away" +
-    " and home_team_id = \"" + team + "\""
+    " and home_team_id = \"" + team + "\"" +
+      " and score_home >= 0 and score_away >= 0"
     ).toDF("HomeWinnings").first()
     val b = homeWiningsPeriod(0).toString.toFloat
     return b
@@ -265,7 +273,8 @@ class HomeAwayRegularSeason(){
       "from " + table +
       " where schedule_season between "+ initYear.toString + " and " + finalYear.toString +
       " and  score_home < score_away" +
-      " and away_team_id = \"" + team + "\""
+      " and away_team_id = \"" + team + "\"" +
+      " and score_home >= 0 and score_away >= 0"
     ).toDF("HomeWinnings").first()
     val b = homeWiningsPeriod(0).toString.toFloat
     return b
@@ -277,7 +286,8 @@ class HomeAwayRegularSeason(){
       "from "+ table +
       " where schedule_season between "+ initYear.toString + " and " + finalYear.toString +
       " and  score_home = score_away" +
-      " and (away_team_id = \"" + team + "\" or home_team_id = \"" + team + "\")"
+      " and (away_team_id = \"" + team + "\" or home_team_id = \"" + team + "\")" +
+      " and score_home >= 0 and score_away >= 0"
     ).toDF("HomeWinnings").first()
     val b = homeWiningsPeriod(0).toString.toFloat
     return b
