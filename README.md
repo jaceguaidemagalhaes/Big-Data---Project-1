@@ -2,11 +2,11 @@
 
 ## Project Description
 
-Project 1 is a Scala console appliction that retrieves data using Hive and MapReduce. It's a data analyser that use the dataset "tobycrabtree/nfl-scores-and-betting-datatobycrabtree" from Kaggle.com using Kaggle API. 
+Project 1 is a Scala console application that manipulates data using Hive and MapReduce. It's a data analyser that use the dataset "tobycrabtree/nfl-scores-and-betting-datatobycrabtree" from Kaggle.com using Kaggle API. 
 
-Data is sanitized to correct some errors and structures in a database with the metadata in a local file and the tables in the HDFS structure.
+Data is sanitized to correct some errors and structures, inserted in a database with the metadata in a local file, and the tables in the HDFS structure.
 
-The Analyses run over NFL games from 1966 to 2021 and provided queries the user can interact defining specific queries' critereas.
+The analyses are over NFL games data from 1966 to 2021, and iteractive queries to the user.
 The available queries are:
 
 1 – How playing at Home or Away relates to games’ winners during regular season?
@@ -72,15 +72,29 @@ values("jaceguai","1411501582391102022111941545898146128230134207012639390134175
 select * from user;
 update user set admin = 1 where user = "jaceguai";  
 
-- Configure HDFS to be accessed through localhost:9000 (or change this value in the main object AnalyseThat.scala for the desired value)
-- Create an user in MySQL who can access analysethat database and its tables. Update username and password for this user at Class ExecuteQuey.scala
-- Open Intellij and rum aboject AnalyseThat.scala
+- Configure HDFS access through localhost:9000 port(or change this value in the main object AnalyseThat.scala for the desired value)
+- Create an user in MySQL who can access AnalyseThat database and its tables. Update username and password for this user at class ExecuteQuery.scala
+- Open Intellij and run object AnalyseThat.scala
 
 ## Usage
 
 Follow the screen instructions to use the system. At this stage, user data entry is not yet validated in all cases. That way, it's important to enter proper data to avoid unexpected behavior. In any case, if the program stops because a wrong entry, just restart the app and it will return to work properly.
 
 Bellow are listed some APP's screenshots.
+
+![Image](https://github.com/jaceguaidemagalhaes/Big-Data---Project-1/blob/main/images/login.png)
+
+![Image](https://github.com/jaceguaidemagalhaes/Big-Data---Project-1/blob/main/images/mainscreen.png)
+
+![Image](https://github.com/jaceguaidemagalhaes/Big-Data---Project-1/blob/main/images/listavailableresults.png)
+
+![Image](https://github.com/jaceguaidemagalhaes/Big-Data---Project-1/blob/main/images/QueryForaSpecificTeam.png)
+
+![Image](https://github.com/jaceguaidemagalhaes/Big-Data---Project-1/blob/main/images/administrativetasks.png)
+
+![Image](https://github.com/jaceguaidemagalhaes/Big-Data---Project-1/blob/main/images/DownloadDatafromKaggle.png)
+
+
 
 
 
