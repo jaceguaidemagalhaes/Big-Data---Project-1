@@ -45,12 +45,12 @@ object AnalyseThat extends App {
   Logger.getLogger("org").setLevel(Level.ERROR)//remove messages
   val spark = SparkSession
     .builder
-    .appName("hello hive")
+    .appName("AnalyseThat Hive")
     .config("spark.master", "local")
     .config("spark.sql.warehouse.dir","hdfs://localhost:9000/user/hive/warehouse")
     .enableHiveSupport()
     .getOrCreate()
-  spark.sparkContext.setLogLevel("ERROR")
+  spark.sparkContext.setLogLevel("ERROR")//remove messages
   //  println("created spark session")
   //val sc = spark.sparkContext
   import spark.implicits._
