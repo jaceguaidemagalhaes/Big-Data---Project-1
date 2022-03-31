@@ -27,13 +27,16 @@ The available queries are:
 
 - Scala 2.11.12
 - Apache Spark 2.4.8
-- MySql 8.0.28
+- MySQL 8.0.28
 - Hadoop 3.3.2
 - Python 3.9
 - Hive 3.1.2-3
 - OpenJDK 8
 - Kaggle CLI
 - SHA-256
+- IntelliJ IDEA 2021.3.2 (Community Edition)
+- MySQL Workbench 8.0.28
+- DBeaver 22 (Edition Community)
 
 ## Features
 
@@ -47,6 +50,37 @@ The available queries are:
 
 ### To-do list:
 
--Include more queries for new trends
+- Create validation to protect against user data entries incompatible with the queries
+- Include more queries for new trends
 
 ## Getting Started
+
+- Cloning the repository
+
+git clone https://github.com/jaceguaidemagalhaes/Big-Data---Project-1 main
+
+- Install the required softwares within technologies used list (for kagle API insatalattion follow instruction in https://www.kaggle.com/docs/api)
+- Use the following scripts to create user table and database (this script will create a first user called jaceguai with password 123456)
+
+///scripts database mysql///////
+
+use analysethat;
+create table user(user varchar(50), password varchar(1000, admin boolean), primary key (user));
+insert into user(user, password)
+// hash for password "123456"
+values("jaceguai","1411501582391102022111941545898146128230134207012639390134175243202180201214658220108146");
+select * from user;
+update user set admin = 1 where user = "jaceguai";  
+
+- Configure HDFS to be accessed through localhost:9000 (or change this value in the main object AnalyseThat.scala for the desired value)
+- Create an user in MySQL who can access analysethat database and its tables. Update username and password for this user at Class ExecuteQuey.scala
+- Open Intellij and rum aboject AnalyseThat.scala
+
+## Usage
+
+Follow the screen instructions to use the system. At this stage, user data entry is not yet validated in all cases. That way, it's important to enter proper data to avoid unexpected behavior. In any case, if the program stops because a wrong entry, just restart the app and it will return to work properly.
+
+Bellow are listed some APP's screenshots.
+
+
+
