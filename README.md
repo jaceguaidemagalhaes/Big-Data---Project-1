@@ -42,7 +42,7 @@ The available queries are:
 
 - User encrypted password using SHA-256
 - User management 
-- Activities restricteds according to user level (Admin, Basin)
+- Activities restricteds according to user level (Admin, Basic)
 - Queries results in .json files
 - User iteraction theough APP defining query parameters
 - API data managed using APP
